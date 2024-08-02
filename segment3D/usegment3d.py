@@ -569,15 +569,15 @@ def aggregate_2D_to_3D_segmentation_indirect_method(segmentations,
                     import multiprocess as mp 
                     n_processes = (mp.cpu_count() - 1) // 2 # halve this? 
                 
-                gradient = usegment3D_flows.distance_centroid_tform_flow_labels2D_dask(mask*1, 
-                                                                                        dtform_method=params['indirect_method']['dtform_method'],
-                                                                                        guide_image=skel_guide_image,
-                                                                                        # guide_image = None, # this is not currently used. 
-                                                                                        fixed_point_percentile=params['indirect_method']['edt_fixed_point_percentile'], 
-                                                                                        n_processes=n_processes,
-                                                                                        iter_factor =  params['indirect_method']['iter_factor'], 
-                                                                                        smooth_skel_sigma=params['indirect_method']['smooth_skel_sigma'],
-                                                                                        power_dist=params['indirect_method']['power_dist'])
+                gradient = usegment3D_flows.distance_centroid_tform_flow_labels2D(mask*1, 
+                                                                                    dtform_method=params['indirect_method']['dtform_method'],
+                                                                                    guide_image=skel_guide_image,
+                                                                                    # guide_image = None, # this is not currently used. 
+                                                                                    fixed_point_percentile=params['indirect_method']['edt_fixed_point_percentile'], 
+                                                                                    # n_processes=n_processes,
+                                                                                    iter_factor =  params['indirect_method']['iter_factor'], 
+                                                                                    smooth_skel_sigma=params['indirect_method']['smooth_skel_sigma'],
+                                                                                    power_dist=params['indirect_method']['power_dist'])
                 gradient = gradient[:,1:].transpose(1,0,2,3).copy() # this should now be the same size as the edt. 
                 
             if mask_ii == 0: #(x,y)

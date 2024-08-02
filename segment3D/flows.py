@@ -720,13 +720,12 @@ def distance_centroid_tform_flow_labels2D_dask(labelled_array,
     from dask.distributed import Client
     
     n_proc = n_processes
-    # client = Client(n_workers=n_proc, threads_per_worker=1)
+    client = Client(n_workers=n_proc, threads_per_worker=1)
     # client = Client(n_workers=n_proc)
     # client = Client(n_workers=n_proc, threads_per_worker=1) # enforce single thread, this reduces garbage collection
     # client = Client(processes=False) # since we are just doing numpy
     
-    # lazy_flow = dask.delayed(distance_centroid_tform_flow_labels2D)
-    lazy_flow = distance_centroid_tform_flow_labels2D
+    lazy_flow = dask.delayed(distance_centroid_tform_flow_labels2D)
     
     
     res = []
@@ -765,7 +764,7 @@ def distance_centroid_tform_flow_labels2D_dask(labelled_array,
     res = dask.compute(res)
     res = np.array(res[0], dtype=np.float32)
          
-    # client.close()
+    client.close()
     
     return res
 
