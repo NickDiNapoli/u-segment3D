@@ -765,7 +765,7 @@ def distance_centroid_tform_flow_labels2D_dask(labelled_array,
     res = dask.compute(res)
     res = np.array(res[0], dtype=np.float32)
          
-    client.close()
+    # client.close()
     
     return res
 
