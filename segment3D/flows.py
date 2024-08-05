@@ -14,33 +14,35 @@ import numpy as np
 """
 Flow 1 - euclidean distance transform. 
 """
-# def distance_transform_labels(labels, bg_label=0):
+def distance_transform_labels(labels, bg_label=0):
     
-#     import numpy as np 
-#     from scipy.ndimage import distance_transform_edt
-#     # import skfmm
+    import numpy as np 
+    from scipy.ndimage import distance_transform_edt
+    # import skfmm
+    """
+    dtform = np.zeros(labels.shape)
+    dtform_flow = np.zeros((2,)+labels.shape) # keep these separate!. 
+
+    uniq_labels = np.setdiff1d(np.unique(labels), bg_label)
+
+    for lab in uniq_labels:
     
-#     dtform = np.zeros(labels.shape)
-#     dtform_flow = np.zeros((2,)+labels.shape) # keep these separate!. 
+        mask = labels == lab
+        # dist_mask = skfmm.distance(mask>0)
+        # dist_mask = distance_transform_edt(mask>0)
+        dist_mask = sdf_distance_transform(mask>0)
     
-#     uniq_labels = np.setdiff1d(np.unique(labels), bg_label)
+        # compute the gradient!. 
+        grad_dist_mask = np.array(np.gradient(dist_mask))
+        grad_dist_mask = grad_dist_mask / (np.linalg.norm(grad_dist_mask, axis=0)[None,...] + 1e-20)
     
-#     for lab in uniq_labels:
-        
-#         mask = labels == lab
-#         # dist_mask = skfmm.distance(mask>0)
-#         # dist_mask = distance_transform_edt(mask>0)
-#         dist_mask = sdf_distance_transform(mask>0)
-        
-#         # compute the gradient!. 
-#         grad_dist_mask = np.array(np.gradient(dist_mask))
-#         grad_dist_mask = grad_dist_mask / (np.linalg.norm(grad_dist_mask, axis=0)[None,...] + 1e-20)
-        
-#         dtform_flow[:,mask>0] = grad_dist_mask[:,mask>0].copy()
-        
-#         dtform[mask>0] = dist_mask[mask>0]
-        
-#     return dtform_flow, dtform 
+        dtform_flow[:,mask>0] = grad_dist_mask[:,mask>0].copy()
+    
+        dtform[mask>0] = dist_mask[mask>0]
+    
+    #return dtform_flow, dtform 
+    """
+    return distance_transform_edt(labels)
 
 
 # =============================================================================
