@@ -557,12 +557,12 @@ def aggregate_2D_to_3D_segmentation_indirect_method(segmentations,
             
             if params['indirect_method']['dtform_method'] == 'edt':
                 # if euclidean then this is simple
-                gradient = usegment3D_flows.distance_transform_labels_fast(mask*1) # ensure int. 
+                gradient = usegment3D_flows.distance_transform_labels_fast(mask*1, sdf=False, n_threads=1, black_border=False) # ensure int. 
                 gradient = np.array([np.array(np.gradient(dist_slice)) for dist_slice in gradient]).transpose(1,0,2,3) # this makes the vectors first dimension
                 gradient = gradient / (np.linalg.norm(gradient, axis=0)[None,...] + 1e-20)
             
             else:
-                skel_guide_image = usegment3D_flows.distance_transform_labels_fast(mask*1)
+                skel_guide_image = usegment3D_flows.distance_transform_labels_fast(mask*1, sdf=False, n_threads=1, black_border=False)
                 
                 n_processes = params['indirect_method']['n_cpu']
                 if n_processes is None:
