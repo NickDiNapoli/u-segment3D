@@ -507,7 +507,6 @@ def distance_centroid_tform_flow_labels2D(labelled,
     for reg in labelled_regions:
         patch = reg.image
         box = reg.bbox # (min_row, min_col, max_row, max_col) # same behavior
-        print(box)
         y1, x1, y2, x2 = box
         start = np.hstack([y1,x1])
         coords = reg.coords 
