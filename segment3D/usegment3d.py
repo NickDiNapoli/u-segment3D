@@ -568,12 +568,13 @@ def aggregate_2D_to_3D_segmentation_indirect_method(segmentations,
                 
                 n_processes = params['indirect_method']['n_cpu']
                 if n_processes is None:
-                    import multiprocess as mp 
-                    n_processes = (mp.cpu_count() - 1) // 2 # halve this? 
+                    # import multiprocess as mp 
+                    # n_processes = (mp.cpu_count() - 1) // 2 # halve this? 
+                    pass
                 
                 gradient = usegment3D_flows.distance_centroid_tform_flow_labels2D(mask*1, 
                                                                                     dtform_method=params['indirect_method']['dtform_method'],
-                                                                                    guide_image=skel_guide_image,
+                                                                                    guide_img=skel_guide_image,
                                                                                     # guide_image = None, # this is not currently used. 
                                                                                     fixed_point_percentile=params['indirect_method']['edt_fixed_point_percentile'], 
                                                                                     # n_processes=n_processes,
