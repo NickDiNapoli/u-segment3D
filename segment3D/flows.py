@@ -771,6 +771,57 @@ def distance_centroid_tform_flow_labels2D_dask(labelled_array,
     return res
 
 
+def distance_centroid_tform_flow_labels2D_no_dask(labelled_array, 
+                                                   dtform_method='cellpose_improve',
+                                                    guide_image=None,
+                                                    fixed_point_percentile=0.9,
+                                                    iter_factor=5, 
+                                                    n_processes=4,
+                                                    smooth_skel_sigma=3,
+                                                    power_dist=None):
+    
+    import numpy as np 
+    
+    res = []
+    for sli in np.arange(len(labelled_array)):
+        if dtform_method == 'cellpose_improve':
+            if guide_image is not None:
+                res.append(distance_centroid_tform_flow_labels2D(labelled_array[sli], 
+                                        dtform_method=dtform_method, 
+                                        guide_img=guide_image[sli], 
+                                        fixed_point_percentile=fixed_point_percentile,
+                                        smooth_skel_sigma=smooth_skel_sigma,
+                                        power_dist=power_dist))
+            else:
+                res.append(distance_centroid_tform_flow_labels2D(labelled_array[sli], 
+                                        dtform_method=dtform_method, 
+                                        guide_img=None, 
+                                        fixed_point_percentile=fixed_point_percentile,
+                                        smooth_skel_sigma=smooth_skel_sigma,
+                                        power_dist=power_dist))
+        else:
+            if guide_image is not None:
+                res.append(distance_centroid_tform_flow_labels2D(labelled_array[sli], 
+                                        dtform_method=dtform_method, 
+                                        guide_img=guide_image[sli], 
+                                        fixed_point_percentile=fixed_point_percentile,
+                                        smooth_skel_sigma=smooth_skel_sigma,
+                                        iter_factor=iter_factor))
+            else:
+                res.append(distance_centroid_tform_flow_labels2D(labelled_array[sli], 
+                                        dtform_method=dtform_method, 
+                                        guide_img=None, 
+                                        fixed_point_percentile=fixed_point_percentile,
+                                        smooth_skel_sigma=smooth_skel_sigma,
+                                        power_dist=power_dist,
+                                        iter_factor=iter_factor))
+        
+
+    res = np.array(res, dtype=np.float32)
+    
+    return res
+
+
 # parallel above but for dtforms
 def _distance_tform_labels2D_chunk(labelled_array, 
                                     dtform_fnc, clip=False):

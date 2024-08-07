@@ -555,55 +555,51 @@ def aggregate_2D_to_3D_segmentation_indirect_method(segmentations,
         
         if mask.max() > 0: 
 
-            for z_slice in mask:
+            if params['indirect_method']['dtform_method'] == 'edt':
+                # if euclidean then this is simple
+                gradient = usegment3D_flows.distance_transform_labels_fast(mask*1, sdf=False, n_threads=1, black_border=False) # ensure int. 
+                gradient = np.array([np.array(np.gradient(dist_slice)) for dist_slice in gradient]).transpose(1,0,2,3) # this makes the vectors first dimension
+                gradient = gradient / (np.linalg.norm(gradient, axis=0)[None,...] + 1e-20)
             
-                if params['indirect_method']['dtform_method'] == 'edt':
-                    # if euclidean then this is simple
-                    #gradient = usegment3D_flows.distance_transform_labels_fast(mask*1, sdf=False, n_threads=1, black_border=False) # ensure int. 
-                    gradient = usegment3D_flows.distance_transform_labels(mask*1)
-                    gradient = np.array([np.array(np.gradient(dist_slice)) for dist_slice in gradient]).transpose(1,0,2,3) # this makes the vectors first dimension
-                    gradient = gradient / (np.linalg.norm(gradient, axis=0)[None,...] + 1e-20)
+            else:
+                skel_guide_image = usegment3D_flows.distance_transform_labels_fast(mask*1, sdf=False, n_threads=1, black_border=False)
                 
-                else:
-                    #skel_guide_image = usegment3D_flows.distance_transform_labels_fast(mask*1, sdf=False, n_threads=1, black_border=False)
-                    skel_guide_image = usegment3D_flows.distance_transform_labels(z_slice*1)
-                    
-                    n_processes = params['indirect_method']['n_cpu']
-                    if n_processes is None:
-                        # import multiprocess as mp 
-                        # n_processes = (mp.cpu_count() - 1) // 2 # halve this? 
-                        pass
-                    
-                    gradient = usegment3D_flows.distance_centroid_tform_flow_labels2D(z_slice*1, 
-                                                                                        dtform_method=params['indirect_method']['dtform_method'],
-                                                                                        guide_img=skel_guide_image,
-                                                                                        # guide_image = None, # this is not currently used. 
-                                                                                        fixed_point_percentile=params['indirect_method']['edt_fixed_point_percentile'], 
-                                                                                        # n_processes=n_processes,
-                                                                                        iter_factor =  params['indirect_method']['iter_factor'], 
-                                                                                        smooth_skel_sigma=params['indirect_method']['smooth_skel_sigma'],
-                                                                                        power_dist=params['indirect_method']['power_dist'])
-                    gradient = gradient[:,1:].transpose(1,0,2,3).copy() # this should now be the same size as the edt. 
-                    
-                if mask_ii == 0: #(x,y)
-                    gradient = gradient.transpose(0,1,2,3).astype(np.float32)
-                if mask_ii == 1: #(x,z)
-                    gradient = gradient.transpose(0,2,1,3).astype(np.float32)
-                if mask_ii == 2: #(y,z)
-                    gradient = gradient.transpose(0,2,3,1).astype(np.float32)
-                    
-                gradient = np.concatenate([np.zeros(img_xy_shape, dtype=np.float32)[None,...], 
-                                                    gradient], axis=0)
+                n_processes = params['indirect_method']['n_cpu']
+                if n_processes is None:
+                    # import multiprocess as mp 
+                    # n_processes = (mp.cpu_count() - 1) // 2 # halve this? 
+                    pass
                 
-                # perform the relevant switches. 
-                if mask_ii == 0: # xy 
-                    gradient = gradient[[0,1,2],...].copy()
-                if mask_ii == 1: # xz 
-                    gradient = gradient[[1,0,2],...].copy()
-                if mask_ii == 2: # xz
-                    gradient = gradient[[1,2,0],...].copy()
+                gradient = usegment3D_flows.distance_centroid_tform_flow_labels2D_no_dask(mask*1,
+                                                                                       dtform_method=params['indirect_method']['dtform_method'],
+                                                                                       guide_image=skel_guide_image,
+                                                                                       # guide_image = None, # this is not currently used. 
+                                                                                       fixed_point_percentile=params['indirect_method']['edt_fixed_point_percentile'], 
+                                                                                       # n_processes=n_processes,
+                                                                                       iter_factor =  params['indirect_method']['iter_factor'], 
+                                                                                       smooth_skel_sigma=params['indirect_method']['smooth_skel_sigma'],
+                                                                                       power_dist=params['indirect_method']['power_dist'])
+            
+                gradient = gradient[:,1:].transpose(1,0,2,3).copy() # this should now be the same size as the edt. 
                     
-                mask_gradients.append(gradient) # make sure to append 
+            if mask_ii == 0: #(x,y)
+                gradient = gradient.transpose(0,1,2,3).astype(np.float32)
+            if mask_ii == 1: #(x,z)
+                gradient = gradient.transpose(0,2,1,3).astype(np.float32)
+            if mask_ii == 2: #(y,z)
+                gradient = gradient.transpose(0,2,3,1).astype(np.float32)
+                
+            gradient = np.concatenate([np.zeros(img_xy_shape, dtype=np.float32)[None,...], gradient], axis=0)
+            
+            # perform the relevant switches. 
+            if mask_ii == 0: # xy 
+                gradient = gradient[[0,1,2],...].copy()
+            if mask_ii == 1: # xz 
+                gradient = gradient[[1,0,2],...].copy()
+            if mask_ii == 2: # xz
+                gradient = gradient[[1,2,0],...].copy()
+                
+            mask_gradients.append(gradient) # make sure to append 
         else:
             mask_gradients.append([]) # everything is zero so nothing to transpose and flip. 
             
